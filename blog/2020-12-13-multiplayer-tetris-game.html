@@ -1,7 +1,15 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"/><meta charSet="utf-8"/><title>Thanish.me - Multiplayer Tetris Game</title><meta name="description" content="A tutorial about writing a multiplayer game from scratch. Starting from solidifying the requirements and continues all the way up to creating a working prototype."/><meta name="next-head-count" content="4"/><link rel="preload" href="/_next/static/css/21dfc3f4812a1fc8e4c0.css" as="style"/><link rel="stylesheet" href="/_next/static/css/21dfc3f4812a1fc8e4c0.css" data-n-g=""/><noscript data-n-css=""></noscript><link rel="preload" href="/_next/static/chunks/main-32dd6c3cc9c48ef79ec5.js" as="script"/><link rel="preload" href="/_next/static/chunks/webpack-e067438c4cf4ef2ef178.js" as="script"/><link rel="preload" href="/_next/static/chunks/framework.cdbdac0a36200f52203c.js" as="script"/><link rel="preload" href="/_next/static/chunks/3ef630e34cd10ba68f9d468ac363ff81c534e1e9.920dbe403c5a8541bbb1.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/_app-b6c115db7faaa0ad7b9c.js" as="script"/><link rel="preload" href="/_next/static/chunks/593d174140e2013aafef88d14920b52dbff37f03.5f6cc9d8c94809d7f6c5.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/blog/2020-12-13-multiplayer-tetris-game-d82260eed474e85fd8be.js" as="script"/></head><body><div id="__next"><main><content class="markdown-body"><article><main><h1>Multiplayer Tetris Game</h1><p>I just wanted to see what it would look like if multiple players try to play Tetris on the same canvas. Let&#x27;s build this game in multiple rounds where the result of each iteration is a playable game.</p><img src="/_next/static/images/1a44a319f1728cbd6fa1a9832c415ce6.png" width="1000" height="700" alt="Tetris game concept"/><p>These are our requirements for version 1:</p><ul><li>it should be possible for multiple players to play the game</li><li>it should support all the basic rules of a &quot;Tetris&quot; like game</li></ul><p>This is what we&#x27;re NOT doing for version 1:</p><ul><li>avoid support for playing with multiple devices, create a split-screen multiplayer game</li><li>avoid support for mobile devices, touch controls, etc.</li></ul><h2>Basic Components</h2><p>Before building, let&#x27;s list down all the basic components. If we get this good enough, it may survive this version and some future versions of this game.</p><img src="/_next/static/images/b18f86c32c28d07a727d3ceeb07b69a8.png" width="1000" height="400" alt="Basic components of the game"/><p>And we also need to define some rules to determine how it should behave. We may change these later but having some at the beginning makes it easy to develop.</p><ul><li>All shapes in the game world must be visible on the screen.</li><li>Shapes must not overlap with other shapes in the game world.</li><li>When the game clock ticks, active shapes will move downwards. If they cannot move downwards they will become inactive.</li><li>Players can move their active shapes left, right or rotate them using actions but only if there is enough empty space.</li></ul><p>I guess that&#x27;s enough to get us started. Let&#x27;s convert what we have designed so far to code to see if it all makes any sense.</p><h2>Writing the code</h2><p>Let&#x27;s start with a list of shape types. We can represent each shape type as a 2D array. The &#x27;1&#x27;s represent filled blocks and the &#x27;0&#x27;s will represent holes.</p><pre><code class="language-js">const SHAPE_TYPES = [
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"/><meta charSet="utf-8"/><title>Thanish.me - Multiplayer Tetris Game</title><meta name="description" content="A tutorial about writing a multiplayer game from scratch. Starting from solidifying the requirements and continues all the way up to creating a working prototype."/><meta name="next-head-count" content="4"/><link rel="preload" href="/_next/static/css/21dfc3f4812a1fc8e4c0.css" as="style"/><link rel="stylesheet" href="/_next/static/css/21dfc3f4812a1fc8e4c0.css" data-n-g=""/><noscript data-n-css=""></noscript><link rel="preload" href="/_next/static/chunks/main-e3975b6d7e1772f0387e.js" as="script"/><link rel="preload" href="/_next/static/chunks/webpack-e067438c4cf4ef2ef178.js" as="script"/><link rel="preload" href="/_next/static/chunks/framework.cdbdac0a36200f52203c.js" as="script"/><link rel="preload" href="/_next/static/chunks/02b7cae8cec81fdb34d1244ae8624c1f1c5964c1.d18b4cd5b9181f9df943.js" as="script"/><link rel="preload" href="/_next/static/chunks/3ef630e34cd10ba68f9d468ac363ff81c534e1e9.c6a4334a2b3b42359535.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/_app-a1e0066742a0084cdf2b.js" as="script"/><link rel="preload" href="/_next/static/chunks/593d174140e2013aafef88d14920b52dbff37f03.588628619938e518ba90.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/blog/2020-12-13-multiplayer-tetris-game-511a2cf6a2e861d53d4b.js" as="script"/></head><body><div id="__next"><main><content class="markdown-body"><article><main><h1>Multiplayer Tetris Game</h1><p>I just wanted to see what it would look like if multiple players try to play Tetris on the same canvas. Let&#x27;s build this game in multiple rounds where the result of each iteration is a playable game.</p><img src="/_next/static/images/1a44a319f1728cbd6fa1a9832c415ce6.png" width="1000" height="700" alt="Tetris game concept"/><p>These are our requirements for version 1:</p><ul><li>it should be possible for multiple players to play the game</li><li>it should support all the basic rules of a &quot;Tetris&quot; like game</li></ul><p>This is what we&#x27;re NOT doing for version 1:</p><ul><li>avoid support for playing with multiple devices, create a split-screen multiplayer game</li><li>avoid support for mobile devices, touch controls, etc.</li></ul><h2>Basic Components</h2><p>Before building, let&#x27;s list down all the basic components. If we get this good enough, it may survive this version and some future versions of this game.</p><img src="/_next/static/images/b18f86c32c28d07a727d3ceeb07b69a8.png" width="1000" height="400" alt="Basic components of the game"/><p>And we also need to define some rules to determine how it should behave. We may change these later but having some at the beginning makes it easy to develop.</p><ul><li>All shapes in the game world must be visible on the screen.</li><li>Shapes must not overlap with other shapes in the game world.</li><li>When the game clock ticks, active shapes will move downwards. If they cannot move downwards they will become inactive.</li><li>Players can move their active shapes left, right or rotate them using actions but only if there is enough empty space.</li></ul><p>I guess that&#x27;s enough to get us started. Let&#x27;s convert what we have designed so far to code to see if it all makes any sense.</p><h2>Writing the code</h2><p>Let&#x27;s start with a list of shape types. We can represent each shape type as a 2D array. The &#x27;1&#x27;s represent filled blocks and the &#x27;0&#x27;s will represent holes.</p><pre><code class="language-js">const SHAPE_TYPES = [
   [
     [1, 1],
     [1, 1],
+  ],
+  [
+    [1, 0, 0],
+    [1, 1, 1],
+  ],
+  [
+    [0, 1, 0],
+    [1, 1, 1],
   ],
 ];
 </code></pre><p>On the other end, we have the player. The most important thing we need from a player is to listen to actions from the player. So what are these actions? let&#x27;s define actions as simple functions which manipulate the active shape. For example, the moveLeft and moveRight functions will modify the &#x27;x&#x27; position of the shape.</p><pre><code class="language-js">const ACTION_TYPES = {
@@ -12,18 +20,37 @@
   moveRight: (shape) =&gt; {
     shape.x++;
   },
-};
-</code></pre><p>The player holds a listener function and calls it when the user performs certain actions. We will require a listener function and a map of keycode to action functions.</p><pre><code class="language-js">const startPlayer = (keymap, listener) =&gt; {
-  document.addEventListener(&#x27;keydown&#x27;, (e) =&gt; {
-    for (const key of Object.keys(keymap)) {
-      if (e.code === key) {
-        listener(keymap[key]);
-        break;
+
+  moveDown: (shape) =&gt; {
+    shape.y++;
+  },
+
+  rotateShape: (shape) =&gt; {
+    const type = [];
+    for(let i = 0; i &lt; shape.type[0].length; ++i) {
+      type[i] = [];
+      for(let j = 0; j &lt; shape.type.length; ++j) {
+        type[i][j] = shape.type[shape.type.length - 1 - j][i];
       }
     }
-  });
+    shape.type = type;
+  },
 };
-</code></pre><p>We don&#x27;t even have a game to play with but we already have some technical debt :D. Let&#x27;s clean it up just to keep things clean.</p><pre><code class="language-js">// the returned function must be called to destroy the player
+</code></pre><p>These actions are triggered by user interactions. We can map these actions to keys on the keyboard. Let&#x27;s do it for 2 players.</p><pre><code class="language-js">const keymaps = [
+  {
+    KeyW: ACTION_TYPES.rotateShape,
+    KeyA: ACTION_TYPES.moveLeft,
+    KeyS: ACTION_TYPES.moveDown,
+    KeyD: ACTION_TYPES.moveRight,
+  },
+  {
+    ArrowUp: ACTION_TYPES.rotateShape,
+    ArrowLeft: ACTION_TYPES.moveLeft,
+    ArrowDown: ACTION_TYPES.moveDown,
+    ArrowRight: ACTION_TYPES.moveRight,
+  },
+];
+</code></pre><p>The player holds a listener function and calls it when the user performs certain actions. It will need a listener function and a map of keycode =&gt; action functions. Because this adds an event listener, let&#x27;s return a function which can be used to clean things up.</p><pre><code class="language-js">// the returned function must be called to destroy the player
 const startPlayer = (keymap, listener) =&gt; {
   const keyDownListener = (e) =&gt; {
     for (const key of Object.keys(keymap)) {
@@ -39,19 +66,259 @@ const startPlayer = (keymap, listener) =&gt; {
     document.removeEventListener(&#x27;keydown&#x27;, keyDownListener);
   };
 };
-</code></pre><p>And next, the game world. It will bring all the players and the shapes together and renders the output using the given renderer.</p><pre><code class="language-js">const startWorld = (keymaps, renderer) =&gt; {
-  const playerActionListener = (i, action) =&gt; {
-    // TODO: apply action on the active shape
+</code></pre><p>And next, the game world. It will bring all the players and the shapes together and renders the output using the given renderer. Let&#x27;s implement only the part where it listens to player actions and applies them on their active shapes and then renders the result.</p><pre><code class="language-js">const startWorld = (keymaps, renderer, options) =&gt; {
+  const PLAYER_COLORS = [&#x27;#6fa8dc&#x27;, &#x27;#f6b26b&#x27;];
+  const playersCount = keymaps.length;
+  const playerShapes = [];
+  const stopPlayerFns = [];
+  const requestReRender = () =&gt; {
+    renderer(playerShapes);
   };
-  const stopPlayerFunctions = [];
-  for (let i = 0; i &lt; keymaps.length; ++i) {
+  const createNewShape = (i) =&gt; {
+    const index = Math.floor(Math.random() * SHAPE_TYPES.length);
+    const shape = { x: 0, y: 0, type: SHAPE_TYPES[index], color: &#x27;#111&#x27; };
+    shape.x = Math.floor((options.worldWidth / playersCount / 2) * (i * 2 + 1));
+    shape.color = PLAYER_COLORS[i % PLAYER_COLORS];
+    playerShapes[i].unshift(shape);
+    requestReRender();
+  };
+  const canPerformAction = (i, action) =&gt; {
+    // TODO: implement checks
+    return true;
+  };
+  const playerActionListener = (i, action) =&gt; {
+    if (!canPerformAction(i, action)) {
+      return;
+    }
+    const shape = playerShapes[i][0];
+    action(shape);
+    requestReRender();
+  };
+  for (let i = 0; i &lt; playersCount; ++i) {
+    playerShapes[i] = [];
+    createNewShape(i);
+  }
+  for (let i = 0; i &lt; playersCount; ++i) {
     const keymap = keymaps[i];
     const listener = (action) =&gt; playerActionListener(i, action);
-    stopPlayerFunctions[i] = startPlayer(keymap, listener);
+    stopPlayerFns[i] = startPlayer(keymap, listener);
   }
 
   return () =&gt; {
-    stopPlayerFunctions.forEach((fn) =&gt; fn());
+    stopPlayerFns.forEach((fn) =&gt; fn());
   };
 };
-</code></pre></main></article></content></main></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{}},"page":"/blog/2020-12-13-multiplayer-tetris-game","query":{},"buildId":"7NAjlWTah5wVzdBgz4IhB","nextExport":true,"autoExport":true,"isFallback":false}</script><script nomodule="" src="/_next/static/chunks/polyfills-11c8eba6a84e3fddec04.js"></script><script src="/_next/static/chunks/main-32dd6c3cc9c48ef79ec5.js" async=""></script><script src="/_next/static/chunks/webpack-e067438c4cf4ef2ef178.js" async=""></script><script src="/_next/static/chunks/framework.cdbdac0a36200f52203c.js" async=""></script><script src="/_next/static/chunks/3ef630e34cd10ba68f9d468ac363ff81c534e1e9.920dbe403c5a8541bbb1.js" async=""></script><script src="/_next/static/chunks/pages/_app-b6c115db7faaa0ad7b9c.js" async=""></script><script src="/_next/static/chunks/593d174140e2013aafef88d14920b52dbff37f03.5f6cc9d8c94809d7f6c5.js" async=""></script><script src="/_next/static/chunks/pages/blog/2020-12-13-multiplayer-tetris-game-d82260eed474e85fd8be.js" async=""></script><script src="/_next/static/7NAjlWTah5wVzdBgz4IhB/_buildManifest.js" async=""></script><script src="/_next/static/7NAjlWTah5wVzdBgz4IhB/_ssgManifest.js" async=""></script></body></html>
+</code></pre><p>Let&#x27;s see how it works with a test renderer.</p><pre><code class="language-js">const renderer = (shapes) =&gt; {
+  console.log(&#x27;render:&#x27;);
+  console.log(JSON.stringify(shapes[0]));
+  console.log(JSON.stringify(shapes[1]));
+};
+const options = {
+  worldWidth: 32,
+};
+startWorld(keymaps, renderer);
+</code></pre><p>Seems to be working fine :)</p><p>Let&#x27;s go ahead and create a simple canvas renderer so we can see what&#x27;s going on.</p><pre><code class="language-js">const createRenderer = (canvas, options) =&gt; {
+  const canvasWidth = options.worldWidth * options.worldScale;
+  const canvasHeight = options.worldHeight * options.worldScale;
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+  const ctx = canvas.getContext(&#x27;2d&#x27;);
+
+  const renderBlock = (x, y, color) =&gt; {
+    ctx.fillStyle = color;
+    ctx.strokeStyle = &#x27;#000&#x27;;
+    ctx.fillRect(
+      x * options.worldScale,
+      y * options.worldScale,
+      options.worldScale,
+      options.worldScale
+    );
+    ctx.strokeRect(
+      x * options.worldScale,
+      y * options.worldScale,
+      options.worldScale,
+      options.worldScale
+    );
+  };
+
+  const renderShape = (shape) =&gt; {
+    ctx.save();
+    ctx.translate(shape.x * options.worldScale, shape.y * options.worldScale);
+    for (let i = 0; i &lt; shape.type.length; ++i) {
+      const row = shape.type[i];
+      for (let j = 0; j &lt; row.length; ++j) {
+        if (row[j]) {
+          renderBlock(j, i, shape.color);
+        }
+      }
+    }
+    ctx.restore();
+  };
+
+  return (playerShapes) =&gt; {
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    for (let i = 0; i &lt; playerShapes.length; ++i) {
+      const shapes = playerShapes[i];
+      for (let j = 0; j &lt; shapes.length; ++j) {
+        renderShape(shapes[j]);
+      }
+    }
+  };
+};
+</code></pre><p>The end result looks something like this. Try pressing the &quot;A&quot;, &quot;D&quot; keys on the keyboard while the iframe is in focus. It should move the shape left or right.</p><iframe src="2020-12-13-multiplayer-tetris-game/frames/version-1" width="100%" height="600" frameBorder="none" scrolling="no"></iframe><p>The next step is to make things move downwards. We can do that by moving the players active shape 1 unit downwards each second.</p><pre><code class="language-js">const startWorld = (keymaps, renderer, options) =&gt; {
+  // ...
+  const stopGameClock = ticker(() =&gt; {
+    for (let i = 0; i &lt; playerShapes.length; ++i) {
+      playerActionListener(i, ACTION_TYPES.moveDown)
+    }
+  });
+  // ...
+
+  return () =&gt; {
+    stopGameClock();
+    // ...
+  };
+};
+</code></pre><p>The next step is to add some rules to the game world. We can check against these rules before performing any actions. In some cases, rules may trigger the game to emit a new shape. Let&#x27;s define what the rules can do.</p><pre><code class="language-js">const RULE_ACTIONS = {
+  BLOCK_ACTION: 1,
+  CREATE_SHAPE: 2,
+  END_THE_GAME: 3,
+};
+</code></pre><p>And then change the player action listener to check the rules.</p><pre><code class="language-js">const startWorld = (keymaps, renderer, ticker, ruleset, options) =&gt; {
+  // ...
+  const playerActionListener = (i, action) =&gt; {
+    const activeShape = playerShapes[i][0];
+    const simulated = Object.create(activeShape);
+    action(simulated);
+    for (let j = 0; j &lt; ruleset.length; ++j) {
+      const ruleFn = ruleset[j];
+      const result = ruleFn(simulated, activeShape, playerShapes);
+      if (result === RULE_ACTIONS.BLOCK_ACTION) {
+        return;
+      } else if (result === RULE_ACTIONS.CREATE_SHAPE) {
+        createNewShape(i);
+        return;
+      } else if (result === RULE_ACTIONS.END_THE_GAME) {
+        alert(&#x27;GAME OVER!&#x27;);
+        stopWorld();
+      }
+    }
+    action(activeShape);
+    requestReRender();
+  };
+  const stopGameClock = ticker(() =&gt; {
+    for (let i = 0; i &lt; playerShapes.length; ++i) {
+      playerActionListener(i, ACTION_TYPES.moveDown);
+    }
+  });
+  const stopWorld = () =&gt; {
+    stopGameClock();
+    stopPlayerFns.forEach((fn) =&gt; fn());
+  };
+  // ...
+  return stopWorld;
+};
+</code></pre><p>And add some rules to the game world.</p><pre><code class="language-js">const createGameRules = (options) =&gt; {
+  const doesBBoxOverlap = (s1, s2) =&gt; {
+    if (
+      s1.x &gt; s2.x + s2.type[0].length ||
+      s1.x + s1.type[0].length &lt; s2.x ||
+      s1.y &gt; s2.y + s2.type.length ||
+      s1.y + s1.type.length &lt; s2.y
+    ) {
+      return false;
+    }
+    return true;
+  };
+  const doesBlockOverlap = (s1, row, col, s2) =&gt; {
+    if (!s1.type[row][col]) {
+      return false;
+    }
+    const s2row = row + s1.y - s2.y;
+    const s2col = col + s1.x - s2.x;
+    if (s2.type[s2row] &amp;&amp; s2.type[s2row][s2col]) {
+      return true;
+    }
+    return false;
+  };
+  const getOtherShapes = function* (activeShape, playerShapes) {
+    for (let i = 0; i &lt; playerShapes.length; ++i) {
+      const shapes = playerShapes[i];
+      for (let j = 0; j &lt; shapes.length; ++j) {
+        const shape = shapes[j];
+        if (shape === activeShape) {
+          continue;
+        }
+        yield [shape, j === 0];
+      }
+    }
+  };
+  const isBlockedFromLeft = (simulated, activeShape, playerShapes) =&gt; {
+    if (simulated.type === activeShape.type &amp;&amp; simulated.x &gt;= activeShape.x) {
+      return null;
+    }
+    if (simulated.x &lt; 0) {
+      return RULE_ACTIONS.BLOCK_ACTION;
+    }
+    for (let [shape] of getOtherShapes(activeShape, playerShapes)) {
+      if (!doesBBoxOverlap(simulated, shape)) {
+        continue;
+      }
+      const col = 0;
+      for (let row = 0; row &lt; simulated.type.length; ++row) {
+        if (doesBlockOverlap(simulated, row, col, shape)) {
+          return RULE_ACTIONS.BLOCK_ACTION;
+        }
+      }
+    }
+    return null;
+  };
+  const isBlockedFromRight = (simulated, activeShape, playerShapes) =&gt; {
+    if (simulated.type === activeShape.type &amp;&amp; simulated.x &lt;= activeShape.x) {
+      return null;
+    }
+    if (simulated.x + simulated.type[0].length &gt; options.worldWidth) {
+      return RULE_ACTIONS.BLOCK_ACTION;
+    }
+    for (let [shape] of getOtherShapes(activeShape, playerShapes)) {
+      if (!doesBBoxOverlap(simulated, shape)) {
+        continue;
+      }
+      const col = simulated.type[0].length - 1;
+      for (let row = 0; row &lt; simulated.type.length; ++row) {
+        if (doesBlockOverlap(simulated, row, col, shape)) {
+          return RULE_ACTIONS.BLOCK_ACTION;
+        }
+      }
+    }
+    return null;
+  };
+  const isBlockedFromBottom = (simulated, activeShape, playerShapes) =&gt; {
+    if (simulated.type === activeShape.type &amp;&amp; simulated.y &lt;= activeShape.y) {
+      return null;
+    }
+    if (simulated.y + simulated.type.length &gt; options.worldHeight) {
+      return RULE_ACTIONS.CREATE_SHAPE;
+    }
+    for (let [shape, isActive] of getOtherShapes(activeShape, playerShapes)) {
+      if (!doesBBoxOverlap(simulated, shape)) {
+        continue;
+      }
+      const row = simulated.type.length - 1;
+      for (let col = 0; col &lt; simulated.type[0].length; ++col) {
+        if (doesBlockOverlap(simulated, row, col, shape)) {
+          if (simulated.y &lt;= 0) {
+            return RULE_ACTIONS.END_THE_GAME;
+          }
+          if (isActive) {
+            return RULE_ACTIONS.BLOCK_ACTION;
+          }
+          return RULE_ACTIONS.CREATE_SHAPE;
+        }
+      }
+    }
+    return null;
+  };
+  return [isBlockedFromLeft, isBlockedFromRight, isBlockedFromBottom];
+};
+</code></pre><p>The result looks like this. Please click on the button to start the game.</p><iframe src="2020-12-13-multiplayer-tetris-game/frames/version-2" width="100%" height="600" frameBorder="none" scrolling="no"></iframe><p>We can stop it here for the MVP. There&#x27;s a lot of work left to do which we&#x27;ll cover in future blog posts.</p></main></article></content></main></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{}},"page":"/blog/2020-12-13-multiplayer-tetris-game","query":{},"buildId":"79CGDev-Wzof0HCETIj99","nextExport":true,"autoExport":true,"isFallback":false}</script><script nomodule="" src="/_next/static/chunks/polyfills-4beebf4ac9054f0bf4e6.js"></script><script src="/_next/static/chunks/main-e3975b6d7e1772f0387e.js" async=""></script><script src="/_next/static/chunks/webpack-e067438c4cf4ef2ef178.js" async=""></script><script src="/_next/static/chunks/framework.cdbdac0a36200f52203c.js" async=""></script><script src="/_next/static/chunks/02b7cae8cec81fdb34d1244ae8624c1f1c5964c1.d18b4cd5b9181f9df943.js" async=""></script><script src="/_next/static/chunks/3ef630e34cd10ba68f9d468ac363ff81c534e1e9.c6a4334a2b3b42359535.js" async=""></script><script src="/_next/static/chunks/pages/_app-a1e0066742a0084cdf2b.js" async=""></script><script src="/_next/static/chunks/593d174140e2013aafef88d14920b52dbff37f03.588628619938e518ba90.js" async=""></script><script src="/_next/static/chunks/pages/blog/2020-12-13-multiplayer-tetris-game-511a2cf6a2e861d53d4b.js" async=""></script><script src="/_next/static/79CGDev-Wzof0HCETIj99/_buildManifest.js" async=""></script><script src="/_next/static/79CGDev-Wzof0HCETIj99/_ssgManifest.js" async=""></script></body></html>
