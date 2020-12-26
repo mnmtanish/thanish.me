@@ -1,0 +1,1 @@
+_N_E=(window.webpackJsonp_N_E=window.webpackJsonp_N_E||[]).push([[35],{"I/ci":function(_,n,i){(window.__NEXT_P=window.__NEXT_P||[]).push(["/blog/2020-12-13-multiplayer-tetris-game-part-1",function(){return i("dDvM")}])}},[["I/ci",0,1,2,5]]]);

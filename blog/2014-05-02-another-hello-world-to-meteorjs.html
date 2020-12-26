@@ -1,0 +1,128 @@
+<!DOCTYPE html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"/><meta charSet="utf-8"/><title>Thanish.me - Another ‘Hello World’ to MeteorJS</title><meta name="description" content="In this tutorial, I’ll try to walk you through building a simple  realtime wall (like a guestbook) where anyone can post messages. And  let’s try to do this without using any magic."/><meta name="next-head-count" content="4"/><link rel="preload" href="/_next/static/css/5a2baf7224eaa76eb18a.css" as="style"/><link rel="stylesheet" href="/_next/static/css/5a2baf7224eaa76eb18a.css" data-n-g=""/><noscript data-n-css=""></noscript><link rel="preload" href="/_next/static/chunks/main-45110e586e5b9bc00f35.js" as="script"/><link rel="preload" href="/_next/static/chunks/webpack-e067438c4cf4ef2ef178.js" as="script"/><link rel="preload" href="/_next/static/chunks/framework.cdbdac0a36200f52203c.js" as="script"/><link rel="preload" href="/_next/static/chunks/4f088cdd89df94f4217543aeda569c5b1b625012.6c26eafa6145d614ef25.js" as="script"/><link rel="preload" href="/_next/static/chunks/3ef630e34cd10ba68f9d468ac363ff81c534e1e9.4a5474eceaa2247b7ab4.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/_app-9653e5f194aa43309c26.js" as="script"/><link rel="preload" href="/_next/static/chunks/11f23a846fefe70cf7319bc32fcbb78766b2a426.2ef15be456a1ac450bb1.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/blog/2014-05-02-another-hello-world-to-meteorjs-ea56632c4e443082fd33.js" as="script"/></head><body><div id="__next"><main><content class="markdown-body"><article><header><h1>Another ‘Hello World’ to MeteorJS</h1><main><section><p>In this tutorial, I’ll try to walk you through building a simple  realtime wall (like a guestbook) where anyone can post messages. And  let’s try to do this without using any magic.</p></section></main></header><main><p>In this tutorial, I’ll try to walk you through building a simple  realtime wall (like a guestbook) where anyone can post messages. And  let’s try to do this without using any magic.</p><h3>Install Meteor and Atmosphere</h3><ul><li>Installing Meteor</li><li>Installing Atmosphere</li></ul><h3>Create new project</h3><p>Just go to the directory you want to create the app and create a new meteor project using following command.</p><pre><code>meteor create the-wall
+
+</code></pre><p>Feel free to run the meteor app although we haven’t even started  coding it yet. It’s okay to keep it running even while you’re coding.</p><pre><code>cd the-wall
+meteor
+
+</code></pre><h3>Remove the magic</h3><p>We’re not going to use any magical features of Meteor. So, let’s remove them.</p><pre><code>meteor remove insecure
+meteor remove autopublish
+
+</code></pre><h3>Create a collection</h3><p>In meteor, we’ll be keeping most of our realtime data in collections. Create a new file <code>posts/collections/posts.js</code>.  This will make this collection available in both the server and the  client. And we want to let anyone post messages and make sure no one can  delete them.</p><p>posts/collections/posts.js</p><pre><code>Posts = new Meteor.Collection(&#x27;posts&#x27;);
+
+Posts.allow({
+  insert: function () { return true },
+  remove: function () { return false }
+});
+
+</code></pre><h3>Publish the collection</h3><p>Data collections must be first published before they can be accessed  by clients. For our example, let’s publish posts which posted in last 24  hours.</p><p>posts/server/publications/latestPosts.js</p><pre><code>Meteor.publish(&#x27;latestPosts&#x27;, function () {
+  var yesterday = new Date().getTime() - 1000*60*60*24;
+  return Posts.find({created: {$gt: yesterday}});
+});
+
+</code></pre><p>Publishing happens server side therefor we can place the code inside a directory called <code>server</code>. For more information about meteor directories, please read <a href="#">Organizing Meteor files</a>.</p><p>Let’s add some example posts so we can check if everything works. Go to <code>localhost:3000</code> using a browser (I guess its either Firefox or Chrome). Bring up the developer console and enter the following.</p><pre><code>var twoDaysAgo = new Date().getTime() - 1000*60*60*24*2;
+Posts.insert({text: &quot;Two Days Ago&quot;, created: twoDaysAgo});
+
+var twoHoursAgo = new Date().getTime() - 1000*60*60*2;
+Posts.insert({text: &quot;Two Hours Ago&quot;, created: twoHoursAgo});
+
+var now = new Date().getTime();
+Posts.insert({text: &quot;Now&quot;, created: now});
+
+</code></pre><h3>Subscribe and fetch posts</h3><p>If you try fetching them from the database, it won’t work because  first we must subscribe to a publication. If you try to fetch anyways,  it’ll return an empty array.</p><pre><code>Posts.find().fetch()
+=&gt; []
+
+</code></pre><p>First you must subscribe to the publication and wait until it’s ready.</p><pre><code>var sub = Meteor.subscribe(&#x27;latestPosts&#x27;);
+
+</code></pre><p>After some time, the subscription will be ready. You can check it  using the ready method of the object returned by Meteor.subscribe().</p><pre><code>sub.ready()
+=&gt; true
+
+</code></pre><p>Finally, you can access posts from the client.</p><pre><code>Posts.find().fetch().toString()
+=&gt; &quot;[object Object],[object Object]&quot;
+
+</code></pre><p>You’ll notice that although there are 3 docs in the collection, only 2  gets to the client through this publication/subscription. This happens  because we have limited docs sent to the client when publishing them.</p><h3>Method to add posts</h3><p>Earlier we added posts from the client side and we set the created  time manually. To make things simpler, we can create a Meteor method  which does this for us.</p><p>posts/server/methods/saveMethod.js</p><pre><code>Meteor.methods({
+  addPost: function (text) {
+    check(text, String);
+    Posts.insert({
+      text: text,
+      created: new Date().getTime()
+    });
+  }
+});
+
+</code></pre><p>And we can make sure this works by calling the method form the client. Try running this command on browser console.</p><pre><code>Meteor.call(&#x27;addPost&#x27;, &#x27;Added using method&#x27;);
+
+</code></pre><h2>Finally the UI</h2><p>Let’s just wrap things up with a simple UI.</p><h3>Main Wrapper</h3><p>client/index.html</p><pre><code>&lt;body&gt;
+  &lt;div id=&quot;wrapper&quot;&gt;
+    {{&gt; newPost}}
+    {{&gt; postsList}}
+  &lt;/div&gt;
+&lt;/body&gt;
+
+</code></pre><p>client/index.css</p><pre><code>#wrapper {
+  max-width: 900px;
+  margin: 5em auto;
+  padding: 0 5em;
+  font-family: sans-serif;
+}
+
+</code></pre><h3>Form to add new post</h3><p>posts/client/newPost.html</p><pre><code>&lt;template name=&quot;newPost&quot;&gt;
+  &lt;div id=&quot;newPost&quot;&gt;
+    &lt;textarea autofocus id=&quot;newPostText&quot;&gt;&lt;/textarea&gt;
+    &lt;button id=&quot;newPostButton&quot;&gt;Save Post&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+</code></pre><p>posts/client/newPost.css</p><pre><code>#newPost textarea {
+  display: block;
+  width: 100%;
+  height: 2.5em;
+  padding: 0.5em 0.75em;
+  outline: none;
+  font-size: 1.5em;
+  box-sizing: border-box;
+}
+
+#newPost button {
+  display: block;
+  width: 100%;
+  background: rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.1);
+  outline: none;
+}
+
+</code></pre><p>posts/client/newPost.js</p><pre><code>Template.newPost.events({
+  &#x27;click #newPostButton&#x27;: function (e) {
+    var textarea = $(&#x27;#newPostText&#x27;);
+    var text = textarea.val();
+    Meteor.call(&#x27;addPost&#x27;, text);
+    textarea.val(&#x27;&#x27;);
+  }
+});
+
+</code></pre><h3>List Posts</h3><p>posts/client/postsList.html</p><pre><code>&lt;template name=&quot;postsList&quot;&gt;
+  &lt;ul id=&quot;postsList&quot;&gt;
+  {{#each posts}}
+    &lt;li&gt;{{text}}&lt;/li&gt;
+  {{/each}}
+  &lt;/ul&gt;
+&lt;/template&gt;
+
+</code></pre><p>posts/client/postsList.css</p><pre><code>#postsList {
+  padding: 0;
+}
+
+#postsList li {
+  display: block;
+  font-size: 1em;
+  background: rgba(0,0,0,0.05);
+  padding: 1.5em 2em;
+  margin: 1em 0;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+</code></pre><p>posts/client/postsList.js</p><pre><code>Meteor.subscribe(&#x27;latestPosts&#x27;);
+
+Template.postsList.posts = function () {
+  return Posts.find();
+}
+
+</code></pre><p>Original Post: <a href="https://mnmtanish.svbtle.com/another-hello-world-to-meteorjs">https://mnmtanish.svbtle.com/another-hello-world-to-meteorjs</a></p></main></article></content></main></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{}},"page":"/blog/2014-05-02-another-hello-world-to-meteorjs","query":{},"buildId":"uZBmhWaPz8a0bbwo3lQ-P","nextExport":true,"autoExport":true,"isFallback":false}</script><script nomodule="" src="/_next/static/chunks/polyfills-3cbe0c61fb24c5233d05.js"></script><script src="/_next/static/chunks/main-45110e586e5b9bc00f35.js" async=""></script><script src="/_next/static/chunks/webpack-e067438c4cf4ef2ef178.js" async=""></script><script src="/_next/static/chunks/framework.cdbdac0a36200f52203c.js" async=""></script><script src="/_next/static/chunks/4f088cdd89df94f4217543aeda569c5b1b625012.6c26eafa6145d614ef25.js" async=""></script><script src="/_next/static/chunks/3ef630e34cd10ba68f9d468ac363ff81c534e1e9.4a5474eceaa2247b7ab4.js" async=""></script><script src="/_next/static/chunks/pages/_app-9653e5f194aa43309c26.js" async=""></script><script src="/_next/static/chunks/11f23a846fefe70cf7319bc32fcbb78766b2a426.2ef15be456a1ac450bb1.js" async=""></script><script src="/_next/static/chunks/pages/blog/2014-05-02-another-hello-world-to-meteorjs-ea56632c4e443082fd33.js" async=""></script><script src="/_next/static/uZBmhWaPz8a0bbwo3lQ-P/_buildManifest.js" async=""></script><script src="/_next/static/uZBmhWaPz8a0bbwo3lQ-P/_ssgManifest.js" async=""></script></body></html>

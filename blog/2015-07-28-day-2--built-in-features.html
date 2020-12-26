@@ -1,0 +1,291 @@
+<!DOCTYPE html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"/><meta charSet="utf-8"/><title>Thanish.me - Day 2: Built-in Features</title><meta name="description" content="This tutorial consists of a number of example go programs demonstrating each feature. It is recommended to try some of them on the Go playground or on your local machine."/><meta name="next-head-count" content="4"/><link rel="preload" href="/_next/static/css/5a2baf7224eaa76eb18a.css" as="style"/><link rel="stylesheet" href="/_next/static/css/5a2baf7224eaa76eb18a.css" data-n-g=""/><noscript data-n-css=""></noscript><link rel="preload" href="/_next/static/chunks/main-45110e586e5b9bc00f35.js" as="script"/><link rel="preload" href="/_next/static/chunks/webpack-e067438c4cf4ef2ef178.js" as="script"/><link rel="preload" href="/_next/static/chunks/framework.cdbdac0a36200f52203c.js" as="script"/><link rel="preload" href="/_next/static/chunks/4f088cdd89df94f4217543aeda569c5b1b625012.6c26eafa6145d614ef25.js" as="script"/><link rel="preload" href="/_next/static/chunks/3ef630e34cd10ba68f9d468ac363ff81c534e1e9.4a5474eceaa2247b7ab4.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/_app-9653e5f194aa43309c26.js" as="script"/><link rel="preload" href="/_next/static/chunks/11f23a846fefe70cf7319bc32fcbb78766b2a426.2ef15be456a1ac450bb1.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/blog/2015-07-28-day-2--built-in-features-66eaf1c58e126991f29d.js" as="script"/></head><body><div id="__next"><main><content class="markdown-body"><article><header><h1>Day 2: Built-in Features</h1><main><section><p>This tutorial consists of a number of example go programs demonstrating each feature. It is recommended to try some of them on the Go playground or on your local machine.</p></section></main></header><main><p>This tutorial consists of a number of example go programs demonstrating each feature. It is recommended to try some of them on the Go playground or on your local machine.</p><p>Constants are declared using the <code>const</code> keyword. They can be declared with a data type but it’s not common. The “Hello World” string can be stored in a constant and printed.</p><pre><code class="language-go">package main
+
+func main() {
+    const hello = &quot;Hello World&quot;
+    println(hello)
+}
+</code></pre><h2>Variables</h2><p>Variables can be declared using the <strong>var</strong> keyword. The “Hello World” string can be stored in a variable before printing.</p><pre><code class="language-go">package main
+
+func main() {
+    var hello string
+    hello = &quot;Hello World&quot;
+
+    // hello := &quot;Hello World&quot;
+    // Can be used to declare and assign
+    // at the same time. Check note below.
+
+    println(hello)
+}
+</code></pre><p>The first 2 lines in the function can be shortened with the “:=” operator. This will attempt to identify the type form the value and use it. In most cases this will work as expected but when using numbers, it will always use <strong>int</strong> for integers and <strong>float64</strong> for floating point numbers. When writing Go programs, the := operator is preferred more than declaring with <strong>var</strong> and assigning later.</p><p>Please note that all variables created must be used in the program otherwise it’ll give an error when running/compiling. In some cases the “_” can be used in place of a variable.</p><p>Go has many more data types which can be read from the <a href="https://golang.org/ref/spec#Types">go specification</a>. The go spec is shorter than most others and also very easy to read and understand.</p><h2>Functions</h2><p>Functions can be defined in Go using the <strong>func</strong> keyword. The hello world program can be written using a sayHello function.</p><pre><code class="language-go">package main
+
+func main() {
+    sayHello()
+}
+
+func sayHello() {
+    println(&quot;Hello World&quot;)
+}
+</code></pre><p>Go functions can also get a number of arguments and use them.</p><pre><code class="language-go">package main
+
+func main() {
+    sayHello(&quot;John&quot;, &quot;Doe&quot;)
+}
+
+// sayHello(fname string, lname string)
+// is also valid and does the same thing
+func sayHello(fname, lname string) {
+    println(&quot;Hello &quot; + fname + &quot; &quot; + lname)
+}
+</code></pre><p>Go functions can also <strong>return multiple arguments</strong>.</p><pre><code class="language-go">package main
+
+func main() {
+    fname, lname := getName()
+    sayHello(fname, lname)
+}
+
+func getName() (string, string) {
+    return &quot;John&quot;, &quot;Doe&quot;
+}
+
+func sayHello(fname, lname string) {
+    println(&quot;Hello &quot; + fname + &quot; &quot; + lname)
+}
+</code></pre><p>Go functions can be used as values. They can be stored in variables, passed as arguments and returned from other functions.</p><pre><code class="language-go">package main
+
+func main() {
+    greet := getGreeter(&quot;Hi&quot;)
+    greet(&quot;John Doe&quot;)
+}
+
+func getGreeter(prefix string) func(name string) {
+    fn := func(name string) {
+        println(prefix + &quot; &quot; + name)
+    }
+    return fn
+}
+</code></pre><p>Above example also demonstrates why is most commonly known as a <strong>closure</strong>. The function created inside getGreeter captures surrounding variables (in this example, the prefix variable) and remembers it when it’s used later.</p><h2>Control Statements</h2><p>Go only has a few statements to control program flow. They are <strong>if</strong>, <strong>switch</strong>, <strong>for</strong>, <strong>break</strong>, <strong>continue</strong> and <strong>goto</strong>. Go also has a <strong>select</strong> statement which is best explained after getting used to go-routines and basics of concurrent programming in go.</p><h3>If</h3><p>In Go control statements do not use parentheses.</p><pre><code class="language-go">package main
+
+func main() {
+    user := &quot;Goku&quot;
+
+    if user == &quot;Goku&quot; {
+        println(&quot;Hello Admin&quot;)
+    }
+}
+</code></pre><p>If conditions may also have an else block.</p><pre><code class="language-go">package main
+
+func main() {
+    user := &quot;Nappa&quot;
+
+    if user == &quot;Goku&quot; {
+        println(&quot;Hello Admin&quot;)
+    } else {
+        println(&quot;Hello Guest&quot;)
+    }
+}
+</code></pre><p>Go also supports else-if blocks. In some cases, a switch may be more appropriate than long if-else ladders.</p><pre><code class="language-go">package main
+
+func main() {
+    user := &quot;Gohan&quot;
+
+    if user == &quot;Goku&quot; {
+        println(&quot;Hello Admin&quot;)
+    } else if user == &quot;Gohan&quot; {
+        println(&quot;Hello User&quot;)
+    } else {
+        println(&quot;Hello Guest&quot;)
+    }
+}
+</code></pre><h3>switch</h3><p>Above example can be written using a switch statement. A switch can be used with strings, integers and other types.</p><pre><code>package main
+
+func main() {
+    user := &quot;Gohan&quot;
+
+    switch user {
+    case &quot;Goku&quot;:
+        println(&quot;Hello Admin&quot;)
+    case &quot;Gohan&quot;:
+        println(&quot;Hello User&quot;)
+    default:
+        println(&quot;Hello Guest&quot;)
+    }
+}
+</code></pre><p>The switch can be written in another format which is useful for more complex situations.</p><pre><code class="language-go">package main
+
+func main() {
+    user := &quot;Goku&quot;
+    pass := &quot;Pass&quot;
+
+    switch {
+    case user == &quot;Goku&quot; &amp;&amp; pass == &quot;P@$Z&quot;:
+        println(&quot;Login Success&quot;)
+    case user == &quot;Goku&quot;:
+        println(&quot;Incorrect Password&quot;)
+    default:
+        println(&quot;User Not Found&quot;)
+    }
+}
+</code></pre><h3>for</h3><p>Go only has for loops but it has a few forms. For loops can be used in many ways depending on the situation. The first form is the infinite loop. The break keyword can be used to exit the loop when necessary.</p><pre><code class="language-go">package main
+
+func main() {
+    for {
+        println(&quot;Loop&quot;)
+    }
+}
+</code></pre><p>The second form is similar to the while loop in most languages.</p><pre><code class="language-go">package main
+
+func main() {
+    i := 0
+
+    for i &lt; 5 {
+        i++
+        println(&quot;Loop&quot;)
+    }
+}
+</code></pre><p>Above loop can be written using the more common for loop like form.</p><pre><code class="language-go">package main
+
+func main() {
+    for i := 0; i &lt; 5; i++ {
+        println(&quot;Loop&quot;)
+    }
+}
+</code></pre><p>There are 2 more special cases which is explained under Slices and Maps.</p><h2>Data Structures</h2><p>Go only has a few data structures built into the language but they are flexible enough to more complex ones on top of them.</p><h3>Slices</h3><p>Go <strong>arrays</strong> are fixed length therefore not easy to handle. Therefore, go programmers often use slices to store series of data. A slice can be created using the <strong>make</strong> keyword. In this example the <strong>Println</strong> function inside the <strong>fmt</strong> package is used. <strong>fmt.Println</strong> can print more data types than <strong>println</strong>. Packages will be explained more in a future tutorial.</p><pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    sz := 3 // slice size
+    t3s := make([]string, sz)
+    t3s[0] = &quot;Krillin&quot;
+    t3s[1] = &quot;Gohan&quot;
+    t3s[2] = &quot;Dende&quot;
+    fmt.Println(t3s)
+}
+</code></pre><p>Slices can also be created with an initial set of elements. Additional items can be added to a slice using the append function. <em>Please note that the array used for the slice may or may not change which depends on the slice’s capacity (array size).</em></p><pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    t3s := []string{&quot;Krillin&quot;, &quot;Gohan&quot;, &quot;Dende&quot;}
+    t4s := append(t3s, &quot;Vegeta&quot;)
+    fmt.Println(t3s, t4s)
+}
+</code></pre><p>The for loop has a special form to iterate over a slice.</p><pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    t3s := []string{&quot;Krillin&quot;, &quot;Gohan&quot;, &quot;Dende&quot;}
+    t4s := make([]string, 4)
+
+    for i, name := range t3s {
+        t4s[i] = name
+    }
+
+    t4s[3] = &quot;Vegeta&quot;
+    fmt.Println(t3s, t4s)
+}
+</code></pre><p>The <strong>copy</strong> function can be used to copy data form one slice to another.</p><pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    t4s := []string{&quot;Krillin&quot;, &quot;Gohan&quot;, &quot;Dende&quot;, &quot;Vegeta&quot;}
+    t3s := make([]string, 3)
+    copy(t3s, t4s)
+
+    fmt.Println(t3s, t4s)
+}
+</code></pre><p>A slice can be made from another slice. Both slices still use the same array. Therefore any changes made to one slice will reflect on the other.</p><pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    t4s := []string{&quot;Krillin&quot;, &quot;Gohan&quot;, &quot;Dende&quot;, &quot;Vegeta&quot;}
+    t3s := t4s[0:3]
+    fmt.Println(t3s, t4s)
+
+    t3s[2] = &quot;Little Green&quot;
+    fmt.Println(t3s, t4s)
+}
+</code></pre><p>To learn more about how slices work, read <a href="http://blog.golang.org/go-slices-usage-and-internals">go slice usage and internals</a> on golang blog.</p><h3>Maps</h3><p>Go map keys can be strings, integers, floats, structs or pointers to data types. This can be useful for mapping one value to another with many data types. The same <strong>make</strong> keyword can be used to create an empty map.</p><pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    t3s := make(map[string]string)
+    t3s[&quot;Krillin&quot;] = &quot;Human&quot;
+    t3s[&quot;Gohan&quot;] = &quot;Saiyan&quot;
+    t3s[&quot;Dende&quot;] = &quot;Namekian&quot;
+    fmt.Println(t3s)
+}
+</code></pre><p>A map can be created with an initial set of items. Unlike slices, maps are copied if assigned to a new variable.</p><pre><code>package main
+
+import &quot;fmt&quot;
+
+func main() {
+    t3s := map[string]string{
+        &quot;Krillin&quot;: &quot;Human&quot;,
+        &quot;Gohan&quot;: &quot;Saiyan&quot;,
+        &quot;Dende&quot;: &quot;Namekian&quot;,
+    }
+    
+    t4s := t3s
+    t4s[&quot;Vegeta&quot;] = &quot;Saiyan&quot;
+
+    fmt.Println(t3s, t4s)
+}
+</code></pre><p>For loop has a special form for maps to iterate over keys and values. The order keys are accessed is randomized by Go to make sure that developers do not depend on it accidentally.</p><pre><code class="language-go">package main
+
+func main() {
+    t3s := map[string]string{
+        &quot;Krillin&quot;: &quot;Human&quot;,
+        &quot;Gohan&quot;:   &quot;Saiyan&quot;,
+        &quot;Dende&quot;:   &quot;Namekian&quot;,
+    }
+
+    for name, race := range t3s {
+        println(name + &quot; is a &quot; + race)
+    }
+}
+</code></pre><h3>Structs</h3><p>Go structs are a collection of variables with one or more data types.</p><pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    type member struct {
+        name string
+        race string
+    }
+    
+    krillin := member{}
+    krillin.name = &quot;Krillin&quot;
+    krillin.race = &quot;Human&quot;
+
+    gohan := member{
+        name: &quot;Gohan&quot;,
+        race: &quot;Saiyan&quot;,
+    }
+
+    fmt.Println(krillin, gohan)
+}
+</code></pre><p>Structs may also have <strong>methods</strong> which makes it similar to classes in OOP languages. To add methods to structs, they must be declared outside the main function.</p><pre><code class="language-go">package main
+
+type member struct {
+    name string
+    race string
+}
+
+func (m member) intro() {
+    println(&quot;Hi, I&#x27;m &quot; + m.name)
+}
+
+func main() {
+    krillin := member{
+        name: &quot;Krillin&quot;,
+        race: &quot;Human&quot;,
+    }
+
+    krillin.intro()
+}
+</code></pre><h2>What’s Next ?</h2><p>This tutorial only covers the most common parts of golang built-ins. To read more the best place is the <a href="https://golang.org/ref/spec">golang spec</a>. It’s also the best place to look when there’s a question regarding how go works.</p></main></article></content></main></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{}},"page":"/blog/2015-07-28-day-2--built-in-features","query":{},"buildId":"uZBmhWaPz8a0bbwo3lQ-P","nextExport":true,"autoExport":true,"isFallback":false}</script><script nomodule="" src="/_next/static/chunks/polyfills-3cbe0c61fb24c5233d05.js"></script><script src="/_next/static/chunks/main-45110e586e5b9bc00f35.js" async=""></script><script src="/_next/static/chunks/webpack-e067438c4cf4ef2ef178.js" async=""></script><script src="/_next/static/chunks/framework.cdbdac0a36200f52203c.js" async=""></script><script src="/_next/static/chunks/4f088cdd89df94f4217543aeda569c5b1b625012.6c26eafa6145d614ef25.js" async=""></script><script src="/_next/static/chunks/3ef630e34cd10ba68f9d468ac363ff81c534e1e9.4a5474eceaa2247b7ab4.js" async=""></script><script src="/_next/static/chunks/pages/_app-9653e5f194aa43309c26.js" async=""></script><script src="/_next/static/chunks/11f23a846fefe70cf7319bc32fcbb78766b2a426.2ef15be456a1ac450bb1.js" async=""></script><script src="/_next/static/chunks/pages/blog/2015-07-28-day-2--built-in-features-66eaf1c58e126991f29d.js" async=""></script><script src="/_next/static/uZBmhWaPz8a0bbwo3lQ-P/_buildManifest.js" async=""></script><script src="/_next/static/uZBmhWaPz8a0bbwo3lQ-P/_ssgManifest.js" async=""></script></body></html>

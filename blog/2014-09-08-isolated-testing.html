@@ -1,0 +1,42 @@
+<!DOCTYPE html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"/><meta charSet="utf-8"/><title>Thanish.me - Isolated Testing</title><meta name="description" content="Just thought of sharing something about writing tests with  JavaScript. Usually, it&#x27;s best to keep tests simple and test just one  thing per test (the _thing_ is most of the time just a _function_)."/><meta name="next-head-count" content="4"/><link rel="preload" href="/_next/static/css/5a2baf7224eaa76eb18a.css" as="style"/><link rel="stylesheet" href="/_next/static/css/5a2baf7224eaa76eb18a.css" data-n-g=""/><noscript data-n-css=""></noscript><link rel="preload" href="/_next/static/chunks/main-45110e586e5b9bc00f35.js" as="script"/><link rel="preload" href="/_next/static/chunks/webpack-e067438c4cf4ef2ef178.js" as="script"/><link rel="preload" href="/_next/static/chunks/framework.cdbdac0a36200f52203c.js" as="script"/><link rel="preload" href="/_next/static/chunks/4f088cdd89df94f4217543aeda569c5b1b625012.6c26eafa6145d614ef25.js" as="script"/><link rel="preload" href="/_next/static/chunks/3ef630e34cd10ba68f9d468ac363ff81c534e1e9.4a5474eceaa2247b7ab4.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/_app-9653e5f194aa43309c26.js" as="script"/><link rel="preload" href="/_next/static/chunks/11f23a846fefe70cf7319bc32fcbb78766b2a426.2ef15be456a1ac450bb1.js" as="script"/><link rel="preload" href="/_next/static/chunks/pages/blog/2014-09-08-isolated-testing-9630e2a26595cf99f9dd.js" as="script"/></head><body><div id="__next"><main><content class="markdown-body"><article><header><h1>Isolated Testing</h1><main><section><p>Just thought of sharing something about writing tests with  JavaScript. Usually, it&#x27;s best to keep tests simple and test just one  thing per test (the _thing_ is most of the time just a _function_).</p></section></main></header><main><p>Just thought of sharing something about writing tests with  JavaScript. Usually, it&#x27;s best to keep tests simple and test just one  thing per test (the <em>thing</em> is most of the time just a <em>function</em>).</p><p>If we use functions we&#x27;re about to test the way we use them in real  programs, tests can get very lengthy and complicated easily. Usually  we&#x27;ll have to write more boilerplate code than real test code. And even  worse, tests may fail for the <em>wrong reason</em>. As a really simple example, assume we want to test the constructor here.</p><pre><code class="language-js">function Person (name) {
+  this._validateName(name);
+  this.name = name;
+}
+
+Person.prototype._validateName = function (name) {
+  assert.equal(typeof name, &#x27;string&#x27;);
+}
+</code></pre><p>This is how I used to write tests.</p><pre><code class="language-js">describe(&#x27;constructor&#x27;, function() {
+  it(&#x27;should validate the name&#x27;, function() {
+    var original = Person.prototype._validateName;
+    Person.prototype._validateName = function (name) {
+        this.name__ = name;
+    };
+    var person = new Person(&#x27;name&#x27;);
+    assert.equal(person.name__, &#x27;name&#x27;);
+    Person.prototype._validateName = original;
+  });
+
+  it(&#x27;should save the name&#x27;, function() {
+    var person = new Person(&#x27;name&#x27;);
+    assert.equal(person.name, &#x27;name&#x27;);
+  });
+});
+</code></pre><p>When testing certain parts, I had to temporarily change the prototype  and restore it after the test. And I also had to consider the rest of  the program too. In this example, I must make sure the <code>name</code> is a string, otherwise it&#x27;ll throw an error and tests will fail. What  we must remember is that the constructor is only responsible for calling  the validation function and not how the validation works. This can get  extremely complex when dealing with large data structures.</p><p>Thanks to JavaScript <code>function.call</code>, we can isolate the function we&#x27;re about to test from the rest of the class/prototype. We can write tests like this.</p><pre><code class="language-js">describe(&#x27;constructor&#x27;, function() {
+  it(&#x27;should validate the name&#x27;, function() {
+    var person = {
+        _validateName: function (name) {
+            this.name__ = name;
+        }
+    };
+    Person.call(person, 1);
+    assert.equal(person.name__, 1);
+  });
+
+  it(&#x27;should save the name&#x27;, function() {
+    var person = {_validateName: Function.prototype};
+    Person.call(person, 1);
+    assert.equal(person.name, 1);
+  });
+});
+</code></pre><p>As an added advantage, we can clearly see what other parts the  function interacts with and how it interacts with other parts of the  program.</p></main></article></content></main></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{}},"page":"/blog/2014-09-08-isolated-testing","query":{},"buildId":"uZBmhWaPz8a0bbwo3lQ-P","nextExport":true,"autoExport":true,"isFallback":false}</script><script nomodule="" src="/_next/static/chunks/polyfills-3cbe0c61fb24c5233d05.js"></script><script src="/_next/static/chunks/main-45110e586e5b9bc00f35.js" async=""></script><script src="/_next/static/chunks/webpack-e067438c4cf4ef2ef178.js" async=""></script><script src="/_next/static/chunks/framework.cdbdac0a36200f52203c.js" async=""></script><script src="/_next/static/chunks/4f088cdd89df94f4217543aeda569c5b1b625012.6c26eafa6145d614ef25.js" async=""></script><script src="/_next/static/chunks/3ef630e34cd10ba68f9d468ac363ff81c534e1e9.4a5474eceaa2247b7ab4.js" async=""></script><script src="/_next/static/chunks/pages/_app-9653e5f194aa43309c26.js" async=""></script><script src="/_next/static/chunks/11f23a846fefe70cf7319bc32fcbb78766b2a426.2ef15be456a1ac450bb1.js" async=""></script><script src="/_next/static/chunks/pages/blog/2014-09-08-isolated-testing-9630e2a26595cf99f9dd.js" async=""></script><script src="/_next/static/uZBmhWaPz8a0bbwo3lQ-P/_buildManifest.js" async=""></script><script src="/_next/static/uZBmhWaPz8a0bbwo3lQ-P/_ssgManifest.js" async=""></script></body></html>
